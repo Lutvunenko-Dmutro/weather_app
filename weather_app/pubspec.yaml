@@ -1,0 +1,41 @@
+name: weather_app
+description: "A new Flutter project."
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.5.3 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.1  # Оновлено до останньої версії
+  http: ^1.2.2  # Оновлено до сумісної версії
+  flutter_typeahead: ^4.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0  # Оновлено до останньої версії
+
+flutter:
+  uses-material-design: true
+
+  # Додано шрифти
+  fonts:
+    - family: Coming Soon
+      fonts:
+        - asset: fonts/ComingSoon-Regular.ttf
+    - family: Montserrat Alternates
+      fonts:
+        - asset: fonts/MontserratAlternates-ThinItalic.ttf
+
+  # Додано іконки погоди
+  assets:
+    - assets/icons/sunny.png
+    - assets/icons/cloudy.png
+    - assets/icons/rain.png
+     # Додайте інші іконки за потреби
+    - assets/ukrainian_cities.json  # Додано список міст

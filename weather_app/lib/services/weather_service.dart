@@ -9,13 +9,13 @@ class WeatherService {
   static const String _apiKey =
       String.fromEnvironment('OWM_API_KEY', defaultValue: '2cb4d4edd671231364e6d681c8465a4c');
 
-  Future<WeatherModel> fetchWeather(String city) async {
+  Future<WeatherModel> fetchWeather(String city, {String lang = 'uk'}) async {
     // Uri.https правильно кодує кирилицю та спецсимволи
     final url = Uri.https('api.openweathermap.org', '/data/2.5/weather', {
       'q': city,
       'appid': _apiKey,
       'units': 'metric',
-      'lang': 'uk',
+      'lang': lang,
     });
 
     try {
@@ -29,12 +29,12 @@ class WeatherService {
     }
   }
 
-  Future<List<ForecastItem>> fetchForecast(String city) async {
+  Future<List<ForecastItem>> fetchForecast(String city, {String lang = 'uk'}) async {
     final url = Uri.https('api.openweathermap.org', '/data/2.5/forecast', {
       'q': city,
       'appid': _apiKey,
       'units': 'metric',
-      'lang': 'uk',
+      'lang': lang,
       'cnt': '40',
     });
 
@@ -45,17 +45,19 @@ class WeatherService {
         final List list = data['list'];
         return list.map((item) => ForecastItem.fromJson(item)).toList();
       }
+      print('HTTP Error for $city: ${response.statusCode} - ${response.body}');
       return [];
-    } catch (_) {
+    } catch (e, st) {
+      print('FetchForecast Error for $city: $e\n$st');
       return [];
     }
   }
 
   // Послідовне завантаження з 500ms паузою — надійне уникнення rate limit
-  Future<List<WeatherModel>> fetchWeatherForCities(List<String> cities) async {
+  Future<List<WeatherModel>> fetchWeatherForCities(List<String> cities, {String lang = 'uk'}) async {
     final results = <WeatherModel>[];
     for (var i = 0; i < cities.length; i++) {
-      results.add(await fetchWeather(cities[i]));
+      results.add(await fetchWeather(cities[i], lang: lang));
       if (i < cities.length - 1) {
         await Future.delayed(const Duration(milliseconds: 500));
       }
@@ -63,10 +65,10 @@ class WeatherService {
     return results;
   }
 
-  Future<Map<String, List<ForecastItem>>> fetchForecastForCities(List<String> cities) async {
+  Future<Map<String, List<ForecastItem>>> fetchForecastForCities(List<String> cities, {String lang = 'uk'}) async {
     final results = <String, List<ForecastItem>>{};
     for (var i = 0; i < cities.length; i++) {
-      results[cities[i]] = await fetchForecast(cities[i]);
+      results[cities[i]] = await fetchForecast(cities[i], lang: lang);
       if (i < cities.length - 1) {
         await Future.delayed(const Duration(milliseconds: 500));
       }

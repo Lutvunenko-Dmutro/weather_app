@@ -22,7 +22,32 @@ class _HomeScreenState extends State<HomeScreen> {
   Map<String, List<ForecastItem>> citiesForecast = {};
   bool isLoading = true;
   bool isCelsius = true;
+  String currentLang = 'uk';
   String errorMessage = '';
+  int _bottomNavIndex = 0;
+
+  void _onBottomNavTapped(int index) {
+    if (index == 0) {
+      setState(() => _bottomNavIndex = 0);
+    } else if (index == 1) {
+      // Search
+      _showAddCityDialog();
+    } else if (index == 2) {
+      // Alerts
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(currentLang == 'uk' 
+            ? 'Немає активних штормових попереджень ☀️' 
+            : 'No active storm warnings ☀️'),
+          backgroundColor: Colors.blueAccent,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else if (index == 3) {
+      // Settings
+      _showSettingsDialog();
+    }
+  }
 
   @override
   void initState() {
@@ -56,8 +81,8 @@ class _HomeScreenState extends State<HomeScreen> {
       errorMessage = '';
     });
     try {
-      final weatherResults = await _service.fetchWeatherForCities(cities);
-      final forecastResults = await _service.fetchForecastForCities(cities);
+      final weatherResults = await _service.fetchWeatherForCities(cities, lang: currentLang);
+      final forecastResults = await _service.fetchForecastForCities(cities, lang: currentLang);
       if (!mounted) return;
       setState(() {
         for (var i = 0; i < cities.length; i++) {
@@ -81,8 +106,8 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
     setState(() => isLoading = true);
-    final weather = await _service.fetchWeather(city);
-    final forecast = await _service.fetchForecast(city);
+    final weather = await _service.fetchWeather(city, lang: currentLang);
+    final forecast = await _service.fetchForecast(city, lang: currentLang);
     if (!mounted) return;
     if (!weather.isError) {
       setState(() {
@@ -107,16 +132,103 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _showSettingsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A2E),
+        title: Text(
+          currentLang == 'uk' ? 'Налаштування' : 'Settings',
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: Text(
+                    currentLang == 'uk' ? 'Мова' : 'Language',
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                  trailing: DropdownButton<String>(
+                    dropdownColor: const Color(0xFF2A2A40),
+                    value: currentLang,
+                    style: const TextStyle(color: Colors.white),
+                    items: const [
+                      DropdownMenuItem(value: 'uk', child: Text('Українська')),
+                      DropdownMenuItem(value: 'en', child: Text('English')),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) {
+                        setDialogState(() => currentLang = val);
+                        setState(() => currentLang = val);
+                        _loadAll(); // reload data in new language
+                      }
+                    },
+                  ),
+                ),
+                ListTile(
+                  title: Text(
+                    currentLang == 'uk' ? 'Одиниці виміру' : 'Temperature Unit',
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                  trailing: DropdownButton<bool>(
+                    dropdownColor: const Color(0xFF2A2A40),
+                    value: isCelsius,
+                    style: const TextStyle(color: Colors.white),
+                    items: const [
+                      DropdownMenuItem(value: true, child: Text('°C')),
+                      DropdownMenuItem(value: false, child: Text('°F')),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) {
+                        setDialogState(() => isCelsius = val);
+                        setState(() => isCelsius = val);
+                      }
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              currentLang == 'uk' ? 'Закрити' : 'Close',
+              style: const TextStyle(color: Colors.blueAccent),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // ValueKey гарантує повний rebuild DefaultTabController при зміні міст
     return DefaultTabController(
       key: ValueKey(cities.join(',')),
       length: cities.length,
-      child: Scaffold(
-        backgroundColor: const Color(0xFF0F0F1A),
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF0D0B2E), // Deep dark blue
+              Color(0xFF2A1549), // Deep purple
+              Color(0xFF0F0F1A), // Dark bottom
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            stops: [0.0, 0.5, 1.0],
+          ),
+        ),
+        child: Scaffold(
+        backgroundColor: Colors.transparent,
         appBar: AppBar(
-          backgroundColor: const Color(0xFF0F0F1A),
+          backgroundColor: Colors.transparent,
           elevation: 0,
           title: const Text(
             'Ukraine Weather',
@@ -179,17 +291,55 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: Colors.white30, fontSize: 14)),
                   )
                 : TabBarView(
-                    // Вимкнути фізику щоб на десктопі не було конфліктів
-                    physics: const NeverScrollableScrollPhysics(),
                     children: cities
                         .map((city) => WeatherCard(
                               weather: citiesWeather[city],
                               forecast: citiesForecast[city] ?? [],
                               isCelsius: isCelsius,
+                              lang: currentLang,
                             ))
                         .toList(),
                   ),
+        bottomNavigationBar: Theme(
+          data: Theme.of(context).copyWith(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+          ),
+          child: BottomNavigationBar(
+            currentIndex: _bottomNavIndex,
+            onTap: _onBottomNavTapped,
+            backgroundColor: Colors.black.withValues(alpha: 0.3),
+            elevation: 0,
+            selectedItemColor: Colors.blueAccent,
+            unselectedItemColor: Colors.white54,
+            showSelectedLabels: true,
+            showUnselectedLabels: true,
+            selectedFontSize: 10,
+            unselectedFontSize: 10,
+            type: BottomNavigationBarType.fixed,
+            items: [
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.calendar_today_rounded, size: 22),
+                label: currentLang == 'uk' ? 'Сьогодні' : 'Today',
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.search_rounded, size: 24),
+                label: currentLang == 'uk' ? 'Пошук' : 'Search',
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.notifications_none_rounded, size: 24),
+                label: currentLang == 'uk' ? 'Сповіщення' : 'Alerts',
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.settings_outlined, size: 24),
+                label: currentLang == 'uk' ? 'Налаштування' : 'Settings',
+              ),
+            ],
+          ),
+        ),
+      ),
       ),
     );
   }
 }
+

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/forecast_model.dart';
 
-class ForecastWidget extends StatelessWidget {
+class ForecastWidget extends StatefulWidget {
   final List<ForecastItem> forecast;
   final bool isCelsius;
   final Color accent;
@@ -14,9 +14,20 @@ class ForecastWidget extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final scrollController = ScrollController();
+  State<ForecastWidget> createState() => _ForecastWidgetState();
+}
 
+class _ForecastWidgetState extends State<ForecastWidget> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -29,50 +40,52 @@ class ForecastWidget extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: 16),
-        // Scrollbar для підтримки мишки на Windows
+        const SizedBox(height: 14),
         Scrollbar(
-          controller: scrollController,
+          controller: _scrollController,
           thumbVisibility: true,
           child: SizedBox(
-            height: 120,
+            height: 118,
             child: ListView.separated(
-              controller: scrollController,
+              controller: _scrollController,
               scrollDirection: Axis.horizontal,
-              itemCount: forecast.length,
+              itemCount: widget.forecast.length,
               separatorBuilder: (_, __) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
-                final item = forecast[index];
+                final item = widget.forecast[index];
                 return Container(
-                  width: 68,
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                  width: 66,
+                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.04),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
                   ),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       Text(
                         item.date,
-                        style: const TextStyle(color: Colors.white24, fontSize: 10),
+                        style: const TextStyle(color: Color(0x33FFFFFF), fontSize: 9),
                       ),
                       Text(
                         item.time,
-                        style: const TextStyle(color: Colors.white30, fontSize: 11),
+                        style: const TextStyle(color: Colors.white38, fontSize: 11),
                       ),
                       Image.network(
                         item.iconUrl,
-                        width: 32,
-                        height: 32,
-                        errorBuilder: (_, __, ___) =>
-                            Icon(Icons.cloud, color: accent.withValues(alpha: 0.5), size: 28),
+                        width: 30,
+                        height: 30,
+                        errorBuilder: (_, __, ___) => Icon(
+                          Icons.cloud,
+                          color: widget.accent.withValues(alpha: 0.5),
+                          size: 26,
+                        ),
                       ),
                       Text(
-                        item.displayTemp(isCelsius),
+                        item.displayTemp(widget.isCelsius),
                         style: TextStyle(
-                          color: accent,
+                          color: widget.accent,
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),

@@ -14,8 +14,17 @@ class WeatherApp extends StatelessWidget {
       title: 'Погода в Україні',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF1A1A2E),
+        colorScheme: const ColorScheme.dark(
+          primary: Colors.white,
+          surface: Color(0xFF1A1A2E),
+        ),
+        tabBarTheme: const TabBarThemeData(
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white38,
+        ),
       ),
       home: const HomeScreen(),
     );

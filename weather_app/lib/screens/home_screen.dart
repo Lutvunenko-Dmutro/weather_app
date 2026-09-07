@@ -13,9 +13,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> {
   final WeatherService _service = WeatherService();
-  TabController? _tabController;
 
   List<String> cities = ['Київ', 'Львів', 'Одеса', 'Харків'];
   List<String> allUkrainianCities = [];
@@ -28,24 +27,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: cities.length, vsync: this);
     _init();
-  }
-
-  void _rebuildTabController() {
-    _tabController?.dispose();
-    _tabController = TabController(length: cities.length, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController?.dispose();
-    super.dispose();
   }
 
   Future<void> _init() async {
     await _loadSavedCities();
-    _rebuildTabController();
     allUkrainianCities = await _service.loadUkrainianCities();
     await _loadAll();
   }
@@ -54,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getStringList('cities');
     if (saved != null && saved.isNotEmpty) {
-      setState(() => cities = saved);
+      if (mounted) setState(() => cities = saved);
     }
   }
 
@@ -97,18 +83,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     setState(() => isLoading = true);
     final weather = await _service.fetchWeather(city);
     final forecast = await _service.fetchForecast(city);
+    if (!mounted) return;
     if (!weather.isError) {
       setState(() {
         cities.add(city);
         citiesWeather[city] = weather;
         citiesForecast[city] = forecast;
-        _rebuildTabController();
       });
       await _saveCities();
     } else {
       setState(() => errorMessage = 'Не вдалося знайти місто "$city".');
     }
-    setState(() => isLoading = false);
+    if (mounted) setState(() => isLoading = false);
   }
 
   void _showAddCityDialog() {
@@ -123,87 +109,87 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    if (_tabController == null) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF0F0F1A),
-        body: Center(child: CircularProgressIndicator(color: Colors.white)),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F0F1A),
-      appBar: AppBar(
+    // ValueKey гарантує повний rebuild DefaultTabController при зміні міст
+    return DefaultTabController(
+      key: ValueKey(cities.join(',')),
+      length: cities.length,
+      child: Scaffold(
         backgroundColor: const Color(0xFF0F0F1A),
-        elevation: 0,
-        title: const Text(
-          'Ukraine Weather',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w300,
-            fontSize: 20,
-            letterSpacing: 1.5,
-          ),
-        ),
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          indicatorColor: Colors.white,
-          indicatorWeight: 1,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white30,
-          labelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
-          tabs: cities.map((city) => Tab(text: city)).toList(),
-        ),
-        actions: [
-          // Перемикач °C / °F
-          TextButton(
-            onPressed: () => setState(() => isCelsius = !isCelsius),
-            child: Text(
-              isCelsius ? '°C' : '°F',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 16,
-                fontWeight: FontWeight.w300,
-              ),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF0F0F1A),
+          elevation: 0,
+          title: const Text(
+            'Ukraine Weather',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w300,
+              fontSize: 20,
+              letterSpacing: 1.5,
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Colors.white54),
-            onPressed: _loadAll,
+          bottom: TabBar(
+            isScrollable: true,
+            indicatorColor: Colors.white,
+            indicatorWeight: 1,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white30,
+            labelStyle:
+                const TextStyle(fontWeight: FontWeight.w400, fontSize: 14),
+            tabs: cities.map((city) => Tab(text: city)).toList(),
           ),
-          IconButton(
-            icon: const Icon(Icons.add_rounded, color: Colors.white54),
-            onPressed: _showAddCityDialog,
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: isLoading
-          ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(color: Colors.white54, strokeWidth: 1),
-                  SizedBox(height: 16),
-                  Text('Завантаження...', style: TextStyle(color: Colors.white30)),
-                ],
+          actions: [
+            TextButton(
+              onPressed: () => setState(() => isCelsius = !isCelsius),
+              child: Text(
+                isCelsius ? '°C' : '°F',
+                style: const TextStyle(
+                    color: Colors.white54,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w300),
               ),
-            )
-          : errorMessage.isNotEmpty
-              ? Center(
-                  child: Text(
-                    errorMessage,
-                    style: const TextStyle(color: Colors.white38, fontSize: 14),
-                  ),
-                )
-              : TabBarView(
-                  controller: _tabController,
-                  children: cities.map((city) => WeatherCard(
-                    weather: citiesWeather[city],
-                    forecast: citiesForecast[city] ?? [],
-                    isCelsius: isCelsius,
-                  )).toList(),
+            ),
+            IconButton(
+              icon: const Icon(Icons.refresh_rounded, color: Colors.white38),
+              onPressed: _loadAll,
+            ),
+            IconButton(
+              icon: const Icon(Icons.add_rounded, color: Colors.white38),
+              onPressed: _showAddCityDialog,
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
+        body: isLoading
+            ? const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                        color: Colors.white38, strokeWidth: 1),
+                    SizedBox(height: 16),
+                    Text('Завантаження...',
+                        style: TextStyle(color: Colors.white24, fontSize: 13)),
+                  ],
                 ),
+              )
+            : errorMessage.isNotEmpty
+                ? Center(
+                    child: Text(errorMessage,
+                        style: const TextStyle(
+                            color: Colors.white30, fontSize: 14)),
+                  )
+                : TabBarView(
+                    // Вимкнути фізику щоб на десктопі не було конфліктів
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: cities
+                        .map((city) => WeatherCard(
+                              weather: citiesWeather[city],
+                              forecast: citiesForecast[city] ?? [],
+                              isCelsius: isCelsius,
+                            ))
+                        .toList(),
+                  ),
+      ),
     );
   }
 }

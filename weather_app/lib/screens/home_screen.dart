@@ -13,8 +13,9 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   final WeatherService _service = WeatherService();
+  TabController? _tabController;
 
   List<String> cities = ['Київ', 'Львів', 'Одеса', 'Харків'];
   List<String> allUkrainianCities = [];
@@ -27,16 +28,28 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: cities.length, vsync: this);
     _init();
+  }
+
+  void _rebuildTabController() {
+    _tabController?.dispose();
+    _tabController = TabController(length: cities.length, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController?.dispose();
+    super.dispose();
   }
 
   Future<void> _init() async {
     await _loadSavedCities();
+    _rebuildTabController();
     allUkrainianCities = await _service.loadUkrainianCities();
     await _loadAll();
   }
 
-  // Зберігаємо список міст між сесіями
   Future<void> _loadSavedCities() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getStringList('cities');
@@ -51,26 +64,26 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadAll() async {
+    if (!mounted) return;
     setState(() {
       isLoading = true;
       errorMessage = '';
     });
     try {
-      // Паралельно завантажуємо поточну погоду та прогноз
       final weatherResults = await _service.fetchWeatherForCities(cities);
-      final forecastResults = await Future.wait(
-        cities.map((city) => _service.fetchForecast(city)),
-      );
+      final forecastResults = await _service.fetchForecastForCities(cities);
+      if (!mounted) return;
       setState(() {
         for (var i = 0; i < cities.length; i++) {
           citiesWeather[cities[i]] = weatherResults[i];
-          citiesForecast[cities[i]] = forecastResults[i];
         }
+        citiesForecast.addAll(forecastResults);
         isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
-        errorMessage = 'Помилка завантаження: $e';
+        errorMessage = 'Помилка: $e';
         isLoading = false;
       });
     }
@@ -89,6 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
         cities.add(city);
         citiesWeather[city] = weather;
         citiesForecast[city] = forecast;
+        _rebuildTabController();
       });
       await _saveCities();
     } else {
@@ -109,76 +123,87 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: cities.length,
-      child: Scaffold(
-        backgroundColor: const Color(0xFF1A1A2E),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: const Text(
-            'Погода в Україні',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w300),
+    if (_tabController == null) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF0F0F1A),
+        body: Center(child: CircularProgressIndicator(color: Colors.white)),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F0F1A),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0F0F1A),
+        elevation: 0,
+        title: const Text(
+          'Ukraine Weather',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w300,
+            fontSize: 20,
+            letterSpacing: 1.5,
           ),
-          bottom: TabBar(
-            isScrollable: true,
-            indicatorColor: Colors.white,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white38,
-            tabs: cities.map((city) => Tab(text: city)).toList(),
-          ),
-          actions: [
-            // Перемикач °C / °F
-            GestureDetector(
-              onTap: () => setState(() => isCelsius = !isCelsius),
-              child: Container(
-                margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.white30),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  isCelsius ? '°C' : '°F',
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                ),
+        ),
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          indicatorColor: Colors.white,
+          indicatorWeight: 1,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white30,
+          labelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+          tabs: cities.map((city) => Tab(text: city)).toList(),
+        ),
+        actions: [
+          // Перемикач °C / °F
+          TextButton(
+            onPressed: () => setState(() => isCelsius = !isCelsius),
+            child: Text(
+              isCelsius ? '°C' : '°F',
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
+                fontWeight: FontWeight.w300,
               ),
             ),
-            // Оновити дані
-            IconButton(
-              icon: const Icon(Icons.refresh, color: Colors.white70),
-              onPressed: _loadAll,
-              tooltip: 'Оновити',
-            ),
-            // Додати місто
-            IconButton(
-              icon: const Icon(Icons.add, color: Colors.white70),
-              onPressed: _showAddCityDialog,
-              tooltip: 'Додати місто',
-            ),
-          ],
-        ),
-        body: isLoading
-            ? const Center(child: CircularProgressIndicator(color: Colors.white))
-            : errorMessage.isNotEmpty
-                ? Center(
-                    child: Text(
-                      errorMessage,
-                      style: const TextStyle(color: Colors.white54, fontSize: 16),
-                      textAlign: TextAlign.center,
-                    ),
-                  )
-                : RefreshIndicator(
-                    onRefresh: _loadAll,
-                    child: TabBarView(
-                      children: cities.map((city) => WeatherCard(
-                        weather: citiesWeather[city],
-                        forecast: citiesForecast[city] ?? [],
-                        isCelsius: isCelsius,
-                      )).toList(),
-                    ),
-                  ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, color: Colors.white54),
+            onPressed: _loadAll,
+          ),
+          IconButton(
+            icon: const Icon(Icons.add_rounded, color: Colors.white54),
+            onPressed: _showAddCityDialog,
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
+      body: isLoading
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: Colors.white54, strokeWidth: 1),
+                  SizedBox(height: 16),
+                  Text('Завантаження...', style: TextStyle(color: Colors.white30)),
+                ],
+              ),
+            )
+          : errorMessage.isNotEmpty
+              ? Center(
+                  child: Text(
+                    errorMessage,
+                    style: const TextStyle(color: Colors.white38, fontSize: 14),
+                  ),
+                )
+              : TabBarView(
+                  controller: _tabController,
+                  children: cities.map((city) => WeatherCard(
+                    weather: citiesWeather[city],
+                    forecast: citiesForecast[city] ?? [],
+                    isCelsius: isCelsius,
+                  )).toList(),
+                ),
     );
   }
 }

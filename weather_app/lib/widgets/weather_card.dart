@@ -15,202 +15,180 @@ class WeatherCard extends StatelessWidget {
     this.isCelsius = true,
   });
 
-  // Градієнт залежно від умовного коду погоди
-  LinearGradient _getGradient() {
-    if (weather == null || weather!.isError) {
-      return const LinearGradient(
-        colors: [Color(0xFF2C3E50), Color(0xFF3D4C5E)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
-    }
+  Color _bgColor() {
+    if (weather == null || weather!.isError) return const Color(0xFF1A1A2E);
     final id = int.tryParse(weather!.conditionId) ?? 0;
+    if (id >= 200 && id < 300) return const Color(0xFF1A0A2E); // Гроза
+    if (id >= 300 && id < 600) return const Color(0xFF0A1628); // Дощ
+    if (id >= 600 && id < 700) return const Color(0xFF1A2030); // Сніг
+    if (id == 800) return const Color(0xFF0A1A2E);             // Ясно
+    return const Color(0xFF111820);                             // Хмарно
+  }
 
-    if (id >= 200 && id < 300) {
-      // Гроза
-      return const LinearGradient(colors: [Color(0xFF1A1A2E), Color(0xFF4A0080)],
-          begin: Alignment.topCenter, end: Alignment.bottomCenter);
-    } else if (id >= 300 && id < 600) {
-      // Дощ / мряка
-      return const LinearGradient(colors: [Color(0xFF2C3E50), Color(0xFF4CA1AF)],
-          begin: Alignment.topCenter, end: Alignment.bottomCenter);
-    } else if (id >= 600 && id < 700) {
-      // Сніг
-      return const LinearGradient(colors: [Color(0xFF5D6D7E), Color(0xFFABB7B7)],
-          begin: Alignment.topCenter, end: Alignment.bottomCenter);
-    } else if (id >= 700 && id < 800) {
-      // Туман
-      return const LinearGradient(colors: [Color(0xFF757F9A), Color(0xFFD7DDE8)],
-          begin: Alignment.topCenter, end: Alignment.bottomCenter);
-    } else if (id == 800) {
-      // Ясно
-      return const LinearGradient(colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
-          begin: Alignment.topCenter, end: Alignment.bottomCenter);
-    } else {
-      // Хмарно
-      return const LinearGradient(colors: [Color(0xFF37474F), Color(0xFF78909C)],
-          begin: Alignment.topCenter, end: Alignment.bottomCenter);
-    }
+  Color _accentColor() {
+    if (weather == null || weather!.isError) return Colors.white24;
+    final id = int.tryParse(weather!.conditionId) ?? 0;
+    if (id >= 200 && id < 300) return const Color(0xFF7B2FBE); // Гроза
+    if (id >= 300 && id < 600) return const Color(0xFF4A8FE7); // Дощ
+    if (id >= 600 && id < 700) return const Color(0xFF90CAF9); // Сніг
+    if (id == 800) return const Color(0xFF4FC3F7);             // Ясно
+    return const Color(0xFF546E7A);                             // Хмарно
   }
 
   @override
   Widget build(BuildContext context) {
+    final bg = _bgColor();
+    final accent = _accentColor();
+
     if (weather == null) {
-      return Container(
-        decoration: BoxDecoration(gradient: _getGradient()),
-        child: const Center(
-          child: CircularProgressIndicator(color: Colors.white),
-        ),
-      );
+      return Container(color: bg,
+        child: const Center(child: CircularProgressIndicator(color: Colors.white30, strokeWidth: 1)));
     }
 
     if (weather!.isError) {
-      return Container(
-        decoration: BoxDecoration(gradient: _getGradient()),
+      return Container(color: bg,
         child: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.cloud_off, size: 80, color: Colors.white54),
-              SizedBox(height: 16),
-              Text('Не вдалося отримати дані',
-                  style: TextStyle(color: Colors.white54, fontSize: 18)),
-            ],
-          ),
-        ),
-      );
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(Icons.cloud_off_rounded, size: 64, color: Colors.white12),
+            SizedBox(height: 16),
+            Text('Немає даних', style: TextStyle(color: Colors.white24, fontSize: 16, letterSpacing: 1)),
+          ]),
+        ));
     }
 
     return Container(
-      decoration: BoxDecoration(gradient: _getGradient()),
+      color: bg,
       child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Іконка та температура
-              Image.network(
-                weather!.iconUrl,
-                width: 120,
-                height: 120,
-                errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.wb_sunny, size: 120, color: Colors.white70),
-              ),
-              Text(
-                weather!.displayTemp(isCelsius),
-                style: const TextStyle(
-                  fontSize: 80,
-                  fontWeight: FontWeight.w200,
-                  color: Colors.white,
-                  height: 1,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                weather!.condition.toUpperCase(),
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.white70,
-                  letterSpacing: 2,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-
-              // Деталі погоди
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Назва міста та іконка
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _DetailItem(
-                      icon: Icons.thermostat,
-                      label: 'Відчувається',
-                      value: weather!.displayFeelsLike(isCelsius),
+                    Text(
+                      weather!.city.toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white30,
+                        fontSize: 12,
+                        letterSpacing: 4,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
-                    _DetailItem(
-                      icon: Icons.water_drop,
-                      label: 'Вологість',
-                      value: '${weather!.humidity}%',
+                    const SizedBox(height: 8),
+                    Text(
+                      weather!.displayTemp(isCelsius),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 96,
+                        fontWeight: FontWeight.w100,
+                        height: 1,
+                      ),
                     ),
-                    _DetailItem(
-                      icon: Icons.air,
-                      label: 'Вітер',
-                      value: '${weather!.windSpeed.toStringAsFixed(1)} м/с',
+                    const SizedBox(height: 8),
+                    Text(
+                      weather!.condition,
+                      style: TextStyle(
+                        color: accent,
+                        fontSize: 15,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 16),
-
-              // Мін/макс
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(16),
+                // Іконка погоди
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: accent.withValues(alpha: 0.1),
+                  ),
+                  child: Image.network(
+                    weather!.iconUrl,
+                    width: 80,
+                    height: 80,
+                    errorBuilder: (_, __, ___) =>
+                        Icon(Icons.wb_sunny_rounded, size: 60, color: accent.withValues(alpha: 0.5)),
+                  ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _DetailItem(
-                      icon: Icons.arrow_downward,
-                      label: 'Мін',
-                      value: weather!.tempMin,
-                    ),
-                    _DetailItem(
-                      icon: Icons.arrow_upward,
-                      label: 'Макс',
-                      value: weather!.tempMax,
-                    ),
-                  ],
-                ),
-              ),
-
-              // Прогноз на 5 днів
-              if (forecast.isNotEmpty) ...[
-                const SizedBox(height: 24),
-                ForecastWidget(forecast: forecast, isCelsius: isCelsius),
               ],
-              const SizedBox(height: 24),
+            ),
+
+            const SizedBox(height: 48),
+
+            // Роздільник
+            Container(height: 1, color: Colors.white.withValues(alpha: 0.06)),
+
+            const SizedBox(height: 32),
+
+            // Деталі — сітка 3x2
+            Row(
+              children: [
+                _StatBlock(label: 'Відчувається', value: weather!.displayFeelsLike(isCelsius), accent: accent),
+                const SizedBox(width: 16),
+                _StatBlock(label: 'Вологість', value: '${weather!.humidity}%', accent: accent),
+                const SizedBox(width: 16),
+                _StatBlock(label: 'Вітер', value: '${weather!.windSpeed.toStringAsFixed(1)} м/с', accent: accent),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                _StatBlock(label: 'Мінімум', value: weather!.tempMin, accent: accent),
+                const SizedBox(width: 16),
+                _StatBlock(label: 'Максимум', value: weather!.tempMax, accent: accent),
+                const Spacer(),
+              ],
+            ),
+
+            // Прогноз
+            if (forecast.isNotEmpty) ...[
+              const SizedBox(height: 40),
+              Container(height: 1, color: Colors.white.withValues(alpha: 0.06)),
+              const SizedBox(height: 28),
+              ForecastWidget(forecast: forecast, isCelsius: isCelsius, accent: accent),
             ],
-          ),
+
+            const SizedBox(height: 32),
+          ],
         ),
       ),
     );
   }
 }
 
-class _DetailItem extends StatelessWidget {
-  final IconData icon;
+class _StatBlock extends StatelessWidget {
   final String label;
   final String value;
+  final Color accent;
 
-  const _DetailItem({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
+  const _StatBlock({required this.label, required this.value, required this.accent});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.white70, size: 22),
-        const SizedBox(height: 6),
-        Text(value,
-            style: const TextStyle(
-                color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 2),
-        Text(label,
-            style: const TextStyle(color: Colors.white54, fontSize: 11)),
-      ],
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: const TextStyle(color: Colors.white30, fontSize: 11, letterSpacing: 0.5)),
+            const SizedBox(height: 6),
+            Text(value, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w300)),
+          ],
+        ),
+      ),
     );
   }
 }

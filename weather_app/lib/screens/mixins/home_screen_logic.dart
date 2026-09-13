@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../services/preferences_service.dart';
 import '../home_screen.dart';
 import 'weather_data_mixin.dart';
 import 'effects_mixin.dart';
@@ -31,8 +32,9 @@ mixin HomeScreenLogic on State<HomeScreen>, TickerProviderStateMixin<HomeScreen>
   }
 
   Future<void> initLogic() async {
-    await loadVariants();
-    await loadSavedCities();
+    await PreferencesService.init(); // singleton init — runs once
+    loadVariants();                  // now sync
+    loadSavedCities();               // sync read from prefs singleton
     initTabController();
     await loadAll();
   }

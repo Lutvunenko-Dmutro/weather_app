@@ -19,6 +19,7 @@ dependencies:
   flutter_weather_bg_null_safety: ^1.0.0
   audioplayers: ^6.6.0
   geocoding: ^5.0.0
+  cached_network_image: ^3.4.1
 
 dev_dependencies:
   flutter_test:

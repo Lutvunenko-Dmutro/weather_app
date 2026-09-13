@@ -12,11 +12,11 @@ mixin EffectsMixin on State<HomeScreen> {
 
   WeatherType? settingsPreviewWeatherType;
 
-  Future<void> loadVariants() async {
-    sunVariant = await PreferencesService.loadVariant('sun');
-    rainVariant = await PreferencesService.loadVariant('rain');
-    snowVariant = await PreferencesService.loadVariant('snow');
-    cloudVariant = await PreferencesService.loadVariant('cloud');
+  void loadVariants() {
+    sunVariant = PreferencesService.loadVariant('sun');
+    rainVariant = PreferencesService.loadVariant('rain');
+    snowVariant = PreferencesService.loadVariant('snow');
+    cloudVariant = PreferencesService.loadVariant('cloud');
   }
 
   void updateVariant(String type, int variant) {

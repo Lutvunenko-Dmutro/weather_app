@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../models/weather_model.dart';
 import '../models/forecast_model.dart';
 import 'weather_details.dart';
@@ -114,12 +115,14 @@ class WeatherCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                Image.network(
-                  weather!.iconUrl,
+                CachedNetworkImage(
+                  imageUrl: weather!.iconUrl,
                   width: 90,
                   height: 90,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Icon(
+                  fadeInDuration: const Duration(milliseconds: 150),
+                  placeholder: (_, __) => const SizedBox(width: 90, height: 90),
+                  errorWidget: (_, __, ___) => const Icon(
                     Icons.wb_sunny_rounded, size: 80, color: Colors.orangeAccent),
                 ),
               ],

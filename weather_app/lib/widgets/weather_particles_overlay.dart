@@ -8,6 +8,8 @@ class WeatherParticlesOverlay extends StatefulWidget {
   final int rainVariant;
   final int snowVariant;
   final bool isPaused;
+  /// Number of particles. Reduce to ~15 for small previews, default 100 for full-screen.
+  final int particleCount;
 
   const WeatherParticlesOverlay({
     super.key,
@@ -17,6 +19,7 @@ class WeatherParticlesOverlay extends StatefulWidget {
     this.rainVariant = 0,
     this.snowVariant = 0,
     this.isPaused = false,
+    this.particleCount = 100,
   });
 
   @override
@@ -39,8 +42,9 @@ class _WeatherParticlesOverlayState extends State<WeatherParticlesOverlay> with 
       _controller.value = 0.5; // Show static particles mid-animation
     }
     
-    // Generate particles for rain/snow
-    for (int i = 0; i < 150; i++) {
+    // Generate particles — fewer for paused preview buttons
+    final count = widget.isPaused ? min(widget.particleCount, 15) : widget.particleCount;
+    for (int i = 0; i < count; i++) {
       _particles.add(Particle(
         x: _random.nextDouble(),
         y: _random.nextDouble(),

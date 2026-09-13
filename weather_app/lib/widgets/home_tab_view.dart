@@ -40,15 +40,17 @@ class HomeTabView extends StatelessWidget {
     return TabBarView(
       controller: tabController,
       children: cities
-          .map((city) => WeatherCard(
-              weather: citiesWeather[city],
-              forecast: citiesForecast[city] ?? [],
-              isCelsius: isCelsius,
-              lang: currentLang,
-              lastUpdated: lastUpdated,
-              onRefresh: onRefresh,
-              onDelete: () => onDeleteCity(city),
-            ))
+          .map((city) => RepaintBoundary(
+                child: WeatherCard(
+                  weather: citiesWeather[city],
+                  forecast: citiesForecast[city] ?? [],
+                  isCelsius: isCelsius,
+                  lang: currentLang,
+                  lastUpdated: lastUpdated,
+                  onRefresh: onRefresh,
+                  onDelete: () => onDeleteCity(city),
+                ),
+              ))
           .toList(),
     );
   }

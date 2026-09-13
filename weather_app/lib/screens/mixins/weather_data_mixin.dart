@@ -59,7 +59,7 @@ mixin WeatherDataMixin on State<HomeScreen>, TickerProviderStateMixin<HomeScreen
   // ── Load ──────────────────────────────────────────────────────────────────
 
   Future<void> loadSavedCities() async {
-    final saved = await PreferencesService.loadCities();
+    final saved = PreferencesService.loadCities();
     if (saved != null && saved.isNotEmpty && mounted) {
       setState(() {
         cities = saved;
@@ -72,21 +72,26 @@ mixin WeatherDataMixin on State<HomeScreen>, TickerProviderStateMixin<HomeScreen
     await PreferencesService.saveCities(cities);
   }
 
-  Future<void> loadAll() async {
+  Future<void> loadAll({bool forceRefresh = false}) async {
     if (!mounted) return;
     setState(() {
       isLoading = true;
       errorMessage = '';
     });
     try {
-      final weatherResults = await _weatherService.fetchWeatherForCities(cities, lang: currentLang);
-      final forecastResults = await _weatherService.fetchForecastForCities(cities, lang: currentLang);
+      // Fetch weather AND forecast for all cities in parallel
+      final results = await Future.wait([
+        _weatherService.fetchWeatherForCities(cities, lang: currentLang, forceRefresh: forceRefresh),
+        _weatherService.fetchForecastForCities(cities, lang: currentLang, forceRefresh: forceRefresh),
+      ]);
       if (!mounted) return;
+      final weatherList = results[0] as List<WeatherModel>;
+      final forecastMap = results[1] as Map<String, List<ForecastItem>>;
       setState(() {
         for (var i = 0; i < cities.length; i++) {
-          citiesWeather[cities[i]] = weatherResults[i];
+          citiesWeather[cities[i]] = weatherList[i];
         }
-        citiesForecast.addAll(forecastResults);
+        citiesForecast.addAll(forecastMap);
         lastUpdated = DateTime.now();
         isLoading = false;
       });

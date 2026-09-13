@@ -1,60 +1,124 @@
-# ☀️ Weather App 
+<div align="center">
 
-[🇺🇦 Українська](#українська-версія) | [🇺🇸 English](#english-version)
+# 🌦️ Ukraine Weather App
+
+**Сучасний погодний додаток на Flutter з мальовничим Glassmorphism дизайном**
+
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?logo=dart&logoColor=white)](https://dart.dev)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white)](https://www.android.com)
+
+🌐 [English version →](README.en.md)
+
+</div>
 
 ---
 
-## <a id="українська-версія"></a>🇺🇦 Українська версія
+## ✨ Можливості
 
-![Flutter](https://img.shields.io/badge/Flutter-02569B?logo=flutter&logoColor=white)
-![Dart](https://img.shields.io/badge/Dart-0175C2?logo=dart&logoColor=white)
+### 🎨 Візуальне оформлення
+- **Glassmorphism UI** — Матові скляні картки, розмитий фон і преміальні темні градієнти.
+- **Динамічний фон** — Фон автоматично відповідає реальній погоді: блакитне небо в ясну погоду, темні хмари при дощі, сірувато-білий при снігу.
+- **Анімовані частинки** — Плавний, намальований на Canvas дощ, сніг і блискавки, що відображають погоду вашого міста.
+- **Рухомі хмари** — Багатошарові анімовані хмари з паралакс-ефектом.
 
-### Огляд
-Цей репозиторій містить кросплатформний додаток для перегляду погоди, розроблений за допомогою **Flutter** та **Dart**. Додаток може компілюватися під Windows, Android, iOS та Web.
+### ⚙️ Налаштовувані ефекти
+У розділі **Налаштування → Ефекти погоди** оберіть стиль для кожного типу погоди:
 
-### Основні можливості
-- Перегляд погоди в реальному часі.
-- Інтеграція з погодним REST API.
-- Динамічна обробка та парсинг JSON-даних.
-- Чистий та адаптивний користувацький інтерфейс.
+| Погода | Варіант 1 | Варіант 2 |
+|--------|-----------|-----------|
+| ☀️ Сонце | Класичне | З відблисками (Lens Flare) |
+| 🌧️ Дощ | Реалістичний | Матриця (Цифровий) |
+| ❄️ Сніг | Легкий сніжок | Хуртовина |
+| ☁️ Хмари | Повільні | Швидкі |
 
-### Запуск локально
-Для запуску вам знадобиться встановлений [Flutter SDK](https://docs.flutter.dev/get-started/install).
+> 🔍 **Живий попередній перегляд** — Кожна кнопка вибору є мініатюрним анімованим екраном із реальним ефектом. Обраний варіант анімується, а фон всього екрана одразу змінюється, коли ви у Налаштуваннях.
 
+### 🌍 Погодні дані
+- Погода в реальному часі від [OpenWeatherMap API](https://openweathermap.org/api)
+- **Погодинний прогноз** — Інтерактивний графік температур (`fl_chart`)
+- **Прогноз на 5 днів** — Мін/макс температури з іконками умов
+- **Кілька міст** — Додавайте та зберігайте скільки завгодно міст
+
+### 🛠️ Налаштування
+- 🌐 **Двомовність**: Українська та Англійська
+- 🌡️ **Одиниці**: °C та °F
+- 💾 **Збереження**: Всі налаштування та список міст зберігаються між сесіями
+
+---
+
+## 📸 Скріншоти
+
+> *(GIF та скріншоти анімацій з'являться найближчим часом!)*
+
+---
+
+## 🛠️ Технологічний стек
+
+| Шар | Технологія |
+|-----|-----------|
+| Фреймворк | Flutter / Dart |
+| API | OpenWeatherMap REST API (`http`) |
+| Графіки | `fl_chart` |
+| Збереження | `shared_preferences` |
+| Форматування дат | `intl` |
+| Звук | `audioplayers` |
+| Анімації | Власний `Canvas` / `AnimationController` |
+
+---
+
+## 🚀 Початок роботи
+
+### 1. Клонуй репозиторій
 ```bash
-# 1. Перейдіть у папку проєкту
+git clone <repository_url>
 cd weather_app
+```
 
-# 2. Отримайте залежності
+### 2. Встанови залежності
+```bash
 flutter pub get
+```
 
-# 3. Запустіть додаток (наприклад, як нативну програму для Windows)
-flutter run -d windows
+### 3. Налаштуй API ключ
+Отримай безкоштовний ключ на [OpenWeatherMap](https://openweathermap.org/api) і запусти:
+```bash
+flutter run --dart-define=OWM_API_KEY=твій_ключ_тут
+```
+> **Примітка:** Резервний демо-ключ вже включено для швидкого тестування.
+
+### 4. Запусти на своєму пристрої
+```bash
+flutter run
 ```
 
 ---
 
-## <a id="english-version"></a>🇺🇸 English Version
+## 🏗️ Архітектура
 
-### Overview
-This repository contains a cross-platform weather forecasting application built with **Flutter** and **Dart**. The application can be compiled for Windows, Android, iOS, and Web environments.
-
-### Key Features
-- Real-time weather forecasting.
-- REST API integration for fetching live weather data.
-- Dynamic JSON parsing.
-- Clean and responsive user interface.
-
-### Running Locally
-To run this application, ensure you have the [Flutter SDK](https://docs.flutter.dev/get-started/install) installed.
-
-```bash
-# 1. Navigate to the project folder
-cd weather_app
-
-# 2. Fetch dependencies
-flutter pub get
-
-# 3. Run the app (e.g., as a native Windows desktop app)
-flutter run -d windows
 ```
+lib/
+├── models/          # Моделі даних (WeatherModel, ForecastItem)
+├── screens/         # Повноекранні екрани (HomeScreen, SettingsView)
+├── services/        # API, Геолокація, Звук, Налаштування
+└── widgets/         # Перевикористовувані компоненти
+    ├── background_gradient.dart        # Динамічний погодний фон
+    ├── weather_particles_overlay.dart  # Дощ / Сніг / Грім (Canvas)
+    ├── moving_clouds_overlay.dart      # Анімовані хмари
+    ├── weather_card.dart               # Картка міста
+    ├── temperature_chart.dart          # Погодинний графік
+    └── ...
+```
+
+---
+
+## 📄 Ліцензія
+
+Цей проєкт ліцензовано під **MIT License**.
+
+---
+
+<div align="center">
+Зроблено з ❤️ та Flutter
+</div>

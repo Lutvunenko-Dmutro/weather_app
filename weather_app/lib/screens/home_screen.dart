@@ -6,9 +6,10 @@ import '../widgets/main_app_bar.dart';
 import '../widgets/background_gradient.dart';
 import '../widgets/loading_state_widget.dart';
 import '../widgets/home_tab_view.dart';
-import 'home_screen_logic.dart';
+import 'mixins/home_screen_logic.dart';
+import 'mixins/weather_data_mixin.dart';
+import 'mixins/effects_mixin.dart';
 import 'settings_view.dart';
-import '../services/weather_sound_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,7 +18,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, HomeScreenLogic {
+class _HomeScreenState extends State<HomeScreen>
+    with TickerProviderStateMixin, WeatherDataMixin, EffectsMixin, HomeScreenLogic {
   @override
   void initState() {
     super.initState();

@@ -68,6 +68,7 @@ class _WeatherParticlesOverlayState extends State<WeatherParticlesOverlay> with 
     }
   }
 
+  @override
   void didUpdateWidget(covariant WeatherParticlesOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isPaused != oldWidget.isPaused) {
@@ -99,7 +100,7 @@ class _WeatherParticlesOverlayState extends State<WeatherParticlesOverlay> with 
           children: [
             if (widget.isThunder)
               Container(
-                color: Colors.white.withOpacity(_thunderOpacity),
+                color: Colors.white.withValues(alpha: _thunderOpacity),
               ),
             if (widget.isRain || widget.isSnow)
               CustomPaint(

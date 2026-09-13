@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import '../models/weather_model.dart';
 import '../models/forecast_model.dart';
-import '../models/weather_model.dart';
-import '../models/forecast_model.dart';
 
 class WeatherService {
   static const String _apiKey =

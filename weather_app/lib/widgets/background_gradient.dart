@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_weather_bg_null_safety/flutter_weather_bg.dart';
-import '../models/weather_model.dart';
 import 'moving_clouds_overlay.dart';
 import 'weather_particles_overlay.dart';
 

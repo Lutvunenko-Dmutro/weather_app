@@ -1,9 +1,9 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_weather_bg_null_safety/flutter_weather_bg.dart';
-import '../widgets/background_gradient.dart';
-import '../models/weather_model.dart';
+import '../widgets/settings/settings_glass_card.dart';
+import '../widgets/settings/weather_variant_section.dart';
 
+/// Full-screen Settings view. Delegates all visual sub-components to dedicated
+/// widgets to keep this file focused solely on layout and data wiring.
 class SettingsView extends StatelessWidget {
   final String currentLang;
   final bool isCelsius;
@@ -28,6 +28,9 @@ class SettingsView extends StatelessWidget {
     required this.onVariantChanged,
   });
 
+  // ── l10n helpers ────────────────────────────────────────────────────────
+  String _t(String uk, String en) => currentLang == 'uk' ? uk : en;
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -38,7 +41,7 @@ class SettingsView extends StatelessWidget {
           children: [
             const SizedBox(height: 20),
             Text(
-              currentLang == 'uk' ? 'Налаштування' : 'Settings',
+              _t('Налаштування', 'Settings'),
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 28,
@@ -47,54 +50,39 @@ class SettingsView extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 30),
-            _buildGlassCard(
+
+            // ── General preferences ──────────────────────────────────────
+            SettingsGlassCard(
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          currentLang == 'uk' ? 'Мова' : 'Language',
-                          style: const TextStyle(color: Colors.white, fontSize: 16),
-                        ),
-                        _buildToggle(
-                          option1: 'Укр',
-                          option2: 'Eng',
-                          isSelected1: currentLang == 'uk',
-                          onTap1: () => onLanguageChanged('uk'),
-                          onTap2: () => onLanguageChanged('en'),
-                        ),
-                      ],
+                  _SettingsRow(
+                    label: _t('Мова', 'Language'),
+                    trailing: SettingsToggle(
+                      option1: 'Укр',
+                      option2: 'Eng',
+                      isSelected1: currentLang == 'uk',
+                      onTap1: () => onLanguageChanged('uk'),
+                      onTap2: () => onLanguageChanged('en'),
                     ),
                   ),
                   const Divider(color: Colors.white24, height: 1),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          currentLang == 'uk' ? 'Одиниці виміру' : 'Temperature Unit',
-                          style: const TextStyle(color: Colors.white, fontSize: 16),
-                        ),
-                        _buildToggle(
-                          option1: '°C',
-                          option2: '°F',
-                          isSelected1: isCelsius,
-                          onTap1: () => onUnitChanged(true),
-                          onTap2: () => onUnitChanged(false),
-                        ),
-                      ],
+                  _SettingsRow(
+                    label: _t('Одиниці виміру', 'Temperature Unit'),
+                    trailing: SettingsToggle(
+                      option1: '°C',
+                      option2: '°F',
+                      isSelected1: isCelsius,
+                      onTap1: () => onUnitChanged(true),
+                      onTap2: () => onUnitChanged(false),
                     ),
                   ),
                 ],
               ),
             ),
+
             const SizedBox(height: 30),
             Text(
-              currentLang == 'uk' ? 'Ефекти погоди' : 'Weather Effects',
+              _t('Ефекти погоди', 'Weather Effects'),
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 20,
@@ -103,55 +91,54 @@ class SettingsView extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              currentLang == 'uk'
-                  ? 'Оберіть стиль анімацій для кожного типу погоди.'
-                  : 'Select animation style for each weather type.',
+              _t(
+                'Оберіть стиль анімацій для кожного типу погоди.',
+                'Select animation style for each weather type.',
+              ),
               style: const TextStyle(color: Colors.white70, fontSize: 14),
             ),
             const SizedBox(height: 16),
+
+            // ── Effect variant sections ──────────────────────────────────
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 child: Column(
                   children: [
-                    _buildVariantSection(
-                      title: currentLang == 'uk' ? 'Сонце' : 'Sun',
+                    WeatherVariantSection(
+                      title: _t('Сонце', 'Sun'),
                       icon: Icons.wb_sunny_rounded,
                       type: 'sun',
                       currentVariant: sunVariant,
-                      options: currentLang == 'uk' 
-                          ? ['Класичне', 'З відблисками (Lens Flare)'] 
-                          : ['Classic', 'Lens Flare'],
+                      options: [_t('Класичне', 'Classic'), _t('З відблисками (Lens Flare)', 'Lens Flare')],
+                      onVariantChanged: onVariantChanged,
                     ),
                     const SizedBox(height: 16),
-                    _buildVariantSection(
-                      title: currentLang == 'uk' ? 'Хмари' : 'Clouds',
+                    WeatherVariantSection(
+                      title: _t('Хмари', 'Clouds'),
                       icon: Icons.cloud_rounded,
                       type: 'cloud',
                       currentVariant: cloudVariant,
-                      options: currentLang == 'uk'
-                          ? ['Повільні', 'Швидкі']
-                          : ['Slow', 'Fast'],
+                      options: [_t('Повільні', 'Slow'), _t('Швидкі', 'Fast')],
+                      onVariantChanged: onVariantChanged,
                     ),
                     const SizedBox(height: 16),
-                    _buildVariantSection(
-                      title: currentLang == 'uk' ? 'Дощ' : 'Rain',
+                    WeatherVariantSection(
+                      title: _t('Дощ', 'Rain'),
                       icon: Icons.water_drop_rounded,
                       type: 'rain',
                       currentVariant: rainVariant,
-                      options: currentLang == 'uk'
-                          ? ['Реалістичний', 'Матриця (Цифровий)']
-                          : ['Realistic', 'Matrix (Digital)'],
+                      options: [_t('Реалістичний', 'Realistic'), _t('Матриця (Цифровий)', 'Matrix (Digital)')],
+                      onVariantChanged: onVariantChanged,
                     ),
                     const SizedBox(height: 16),
-                    _buildVariantSection(
-                      title: currentLang == 'uk' ? 'Сніг' : 'Snow',
+                    WeatherVariantSection(
+                      title: _t('Сніг', 'Snow'),
                       icon: Icons.ac_unit_rounded,
                       type: 'snow',
                       currentVariant: snowVariant,
-                      options: currentLang == 'uk'
-                          ? ['Легкий сніжок', 'Хуртовина']
-                          : ['Light Snow', 'Blizzard'],
+                      options: [_t('Легкий сніжок', 'Light Snow'), _t('Хуртовина', 'Blizzard')],
+                      onVariantChanged: onVariantChanged,
                     ),
                     const SizedBox(height: 32),
                   ],
@@ -163,178 +150,24 @@ class SettingsView extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildGlassCard({required Widget child}) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
-          ),
-          child: child,
-        ),
-      ),
-    );
-  }
+/// A simple row used inside the general-preferences glass card.
+class _SettingsRow extends StatelessWidget {
+  final String label;
+  final Widget trailing;
 
-  Widget _buildVariantSection({
-    required String title,
-    required IconData icon,
-    required String type,
-    required int currentVariant,
-    required List<String> options,
-  }) {
-    return _buildGlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: Colors.white70, size: 24),
-                const SizedBox(width: 12),
-                Text(
-                  title,
-                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: List.generate(options.length, (index) {
-                final isSelected = currentVariant == index;
-                
-                WeatherType bgWeatherType = WeatherType.sunny;
-                int sunVar = 0, rainVar = 0, snowVar = 0, cloudVar = 0;
-                
-                if (type == 'sun') {
-                  bgWeatherType = WeatherType.sunny;
-                  sunVar = index;
-                } else if (type == 'cloud') {
-                  bgWeatherType = WeatherType.cloudy;
-                  cloudVar = index;
-                } else if (type == 'rain') {
-                  bgWeatherType = WeatherType.heavyRainy;
-                  rainVar = index;
-                } else if (type == 'snow') {
-                  bgWeatherType = WeatherType.heavySnow;
-                  snowVar = index;
-                }
+  const _SettingsRow({required this.label, required this.trailing});
 
-                Widget button = GestureDetector(
-                  onTap: () => onVariantChanged(type, index),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    height: 60,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isSelected ? Colors.blueAccent : Colors.white24,
-                        width: isSelected ? 2 : 1,
-                      ),
-                      boxShadow: isSelected 
-                        ? [BoxShadow(color: Colors.blueAccent.withValues(alpha: 0.3), blurRadius: 10)]
-                        : null,
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(18),
-                      child: BackgroundGradient(
-                        weatherType: bgWeatherType,
-                        sunVariant: sunVar,
-                        rainVariant: rainVar,
-                        snowVariant: snowVar,
-                        cloudVariant: cloudVar,
-                        isPaused: !isSelected,
-                        child: Container(
-                          color: Colors.black.withValues(alpha: 0.4),
-                          alignment: Alignment.center,
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: Text(
-                            options[index],
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.white70,
-                              fontSize: 13,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-
-                return Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(right: index < options.length - 1 ? 12.0 : 0),
-                    child: button,
-                  ),
-                );
-              }),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildToggle({
-    required String option1,
-    required String option2,
-    required bool isSelected1,
-    required VoidCallback onTap1,
-    required VoidCallback onTap2,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white24),
-      ),
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          GestureDetector(
-            onTap: onTap1,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: isSelected1 ? Colors.blueAccent : Colors.transparent,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Text(
-                option1,
-                style: TextStyle(
-                  color: isSelected1 ? Colors.white : Colors.white70,
-                  fontWeight: isSelected1 ? FontWeight.bold : FontWeight.normal,
-                ),
-              ),
-            ),
-          ),
-          GestureDetector(
-            onTap: onTap2,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: !isSelected1 ? Colors.blueAccent : Colors.transparent,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Text(
-                option2,
-                style: TextStyle(
-                  color: !isSelected1 ? Colors.white : Colors.white70,
-                  fontWeight: !isSelected1 ? FontWeight.bold : FontWeight.normal,
-                ),
-              ),
-            ),
-          ),
+          Text(label, style: const TextStyle(color: Colors.white, fontSize: 16)),
+          trailing,
         ],
       ),
     );

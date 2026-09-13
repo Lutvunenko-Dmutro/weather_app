@@ -5,6 +5,7 @@ class WeatherModel {
   final String? translatedCity;
   final String condition;
   final String conditionId;
+  int? get conditionCode => int.tryParse(conditionId);
   final String iconUrl;
   final int rawTemp;
   final int rawTempMin;

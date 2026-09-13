@@ -10,6 +10,7 @@ import 'mixins/home_screen_logic.dart';
 import 'mixins/weather_data_mixin.dart';
 import 'mixins/effects_mixin.dart';
 import 'settings_view.dart';
+import 'notification_history_view.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -47,9 +48,9 @@ class _HomeScreenState extends State<HomeScreen>
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: PreferredSize(
-          preferredSize: bottomNavIndex == 2 ? Size.zero : const Size.fromHeight(kToolbarHeight + 48.0),
+          preferredSize: bottomNavIndex != 0 ? Size.zero : const Size.fromHeight(kToolbarHeight + 48.0),
           child: Offstage(
-            offstage: bottomNavIndex == 2,
+            offstage: bottomNavIndex != 0,
             child: MainAppBar(
               currentLang: currentLang,
               cities: cities,
@@ -63,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen>
         body: Stack(
           children: [
             Offstage(
-              offstage: bottomNavIndex == 2,
+              offstage: bottomNavIndex != 0,
               child: Stack(
                 children: [
                   // ALWAYS keep HomeTabView in the tree to prevent unmount crashes
@@ -107,6 +108,8 @@ class _HomeScreenState extends State<HomeScreen>
                 ],
               ),
             ),
+            if (bottomNavIndex == 1)
+              NotificationHistoryView(currentLang: currentLang),
             if (bottomNavIndex == 2)
               SettingsView(
                 currentLang: currentLang,

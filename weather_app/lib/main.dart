@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
+import 'services/background_weather_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await BackgroundWeatherService.init();
   runApp(const WeatherApp());
 }
 

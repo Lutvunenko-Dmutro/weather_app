@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../services/preferences_service.dart';
+import '../services/notification_service.dart';
+import '../services/background_weather_service.dart';
 import '../widgets/settings/settings_glass_card.dart';
 import '../widgets/settings/weather_variant_section.dart';
 
@@ -51,66 +54,122 @@ class SettingsView extends StatelessWidget {
             ),
             const SizedBox(height: 30),
 
-            // ── General preferences ──────────────────────────────────────
-            SettingsGlassCard(
-              child: Column(
-                children: [
-                  _SettingsRow(
-                    label: _t('Мова', 'Language'),
-                    trailing: SettingsToggle(
-                      option1: 'Укр',
-                      option2: 'Eng',
-                      isSelected1: currentLang == 'uk',
-                      onTap1: () => onLanguageChanged('uk'),
-                      onTap2: () => onLanguageChanged('en'),
-                    ),
-                  ),
-                  const Divider(color: Colors.white24, height: 1),
-                  _SettingsRow(
-                    label: _t('Одиниці виміру', 'Temperature Unit'),
-                    trailing: SettingsToggle(
-                      option1: '°C',
-                      option2: '°F',
-                      isSelected1: isCelsius,
-                      onTap1: () => onUnitChanged(true),
-                      onTap2: () => onUnitChanged(false),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 30),
-            Text(
-              _t('Ефекти погоди', 'Weather Effects'),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _t(
-                'Оберіть стиль анімацій для кожного типу погоди.',
-                'Select animation style for each weather type.',
-              ),
-              style: const TextStyle(color: Colors.white70, fontSize: 14),
-            ),
-            const SizedBox(height: 16),
-
-            // ── Effect variant sections ──────────────────────────────────
+            // ── All Settings Scrollable Area ─────────────────────────────
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    SettingsGlassCard(
+                      child: Column(
+                        children: [
+                          _SettingsRow(
+                            label: _t('Мова', 'Language'),
+                            trailing: SettingsToggle(
+                              option1: 'Укр',
+                              option2: 'Eng',
+                              isSelected1: currentLang == 'uk',
+                              onTap1: () => onLanguageChanged('uk'),
+                              onTap2: () => onLanguageChanged('en'),
+                            ),
+                          ),
+                          const Divider(color: Colors.white24, height: 1),
+                          _SettingsRow(
+                            label: _t('Одиниці виміру', 'Temperature Unit'),
+                            trailing: SettingsToggle(
+                              option1: '°C',
+                              option2: '°F',
+                              isSelected1: isCelsius,
+                              onTap1: () => onUnitChanged(true),
+                              onTap2: () => onUnitChanged(false),
+                            ),
+                          ),
+                          const Divider(color: Colors.white24, height: 1),
+                          _SettingsRow(
+                            label: _t('Сповіщення', 'Notifications'),
+                            trailing: Switch(
+                              value: PreferencesService.loadNotificationsEnabled(),
+                              activeColor: Colors.blueAccent,
+                              onChanged: (val) async {
+                                if (val) {
+                                  final granted = await NotificationService.requestPermission();
+                                  if (!granted) return;
+                                  await BackgroundWeatherService.schedule(
+                                    lang: currentLang,
+                                    isCelsius: isCelsius,
+                                  );
+                                } else {
+                                  await BackgroundWeatherService.cancel();
+                                }
+                                await PreferencesService.saveNotificationsEnabled(val);
+                                onLanguageChanged(currentLang); 
+                              },
+                            ),
+                          ),
+                          if (PreferencesService.loadNotificationsEnabled()) ...[
+                            const Divider(color: Colors.white24, height: 1),
+                            _SettingsRow(
+                              label: _t('  • Дощ / Сніг', '  • Rain / Snow'),
+                              trailing: Switch(
+                                value: PreferencesService.loadNotifyRain(),
+                                activeColor: Colors.blueAccent,
+                                onChanged: (val) async {
+                                  await PreferencesService.saveNotifyRain(val);
+                                  onLanguageChanged(currentLang);
+                                },
+                              ),
+                            ),
+                            _SettingsRow(
+                              label: _t('  • Заморозки (< 0°C)', '  • Freezes (< 0°C)'),
+                              trailing: Switch(
+                                value: PreferencesService.loadNotifyFreeze(),
+                                activeColor: Colors.blueAccent,
+                                onChanged: (val) async {
+                                  await PreferencesService.saveNotifyFreeze(val);
+                                  onLanguageChanged(currentLang);
+                                },
+                              ),
+                            ),
+                            _SettingsRow(
+                              label: _t('  • Регулярні зведення', '  • Regular updates'),
+                              trailing: Switch(
+                                value: PreferencesService.loadNotifyRegular(),
+                                activeColor: Colors.blueAccent,
+                                onChanged: (val) async {
+                                  await PreferencesService.saveNotifyRegular(val);
+                                  onLanguageChanged(currentLang);
+                                },
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    Text(
+                      _t('Ефекти погоди', 'Weather Effects'),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _t(
+                        'Оберіть стиль анімацій для кожного типу погоди.',
+                        'Select animation style for each weather type.',
+                      ),
+                      style: const TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                    const SizedBox(height: 16),
                     WeatherVariantSection(
                       title: _t('Сонце', 'Sun'),
                       icon: Icons.wb_sunny_rounded,
                       type: 'sun',
                       currentVariant: sunVariant,
-                      options: [_t('Класичне', 'Classic'), _t('З відблисками (Lens Flare)', 'Lens Flare')],
+                      options: [_t('Класичне', 'Classic'), _t('З відблисками', 'Lens Flare')],
                       onVariantChanged: onVariantChanged,
                     ),
                     const SizedBox(height: 16),
@@ -128,7 +187,7 @@ class SettingsView extends StatelessWidget {
                       icon: Icons.water_drop_rounded,
                       type: 'rain',
                       currentVariant: rainVariant,
-                      options: [_t('Реалістичний', 'Realistic'), _t('Матриця (Цифровий)', 'Matrix (Digital)')],
+                      options: [_t('Реалістичний', 'Realistic'), _t('Матриця', 'Matrix')],
                       onVariantChanged: onVariantChanged,
                     ),
                     const SizedBox(height: 16),
@@ -166,7 +225,12 @@ class _SettingsRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.white, fontSize: 16)),
+          Expanded(
+            child: Text(
+              label, 
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+            ),
+          ),
           trailing,
         ],
       ),

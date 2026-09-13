@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/preferences_service.dart';
+import '../../services/notification_service.dart';
 import '../home_screen.dart';
 import 'weather_data_mixin.dart';
 import 'effects_mixin.dart';
@@ -11,24 +12,10 @@ mixin HomeScreenLogic on State<HomeScreen>, TickerProviderStateMixin<HomeScreen>
   int bottomNavIndex = 0;
 
   void onBottomNavTapped(int index) {
-    if (index == 0 || index == 2) {
-      setState(() {
-        bottomNavIndex = index;
-        if (index != 2) clearSettingsPreview();
-      });
-    } else if (index == 1) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            currentLang == 'uk'
-                ? 'Немає активних штормових попереджень ☀️'
-                : 'No active storm warnings ☀️',
-          ),
-          backgroundColor: Colors.blueAccent,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
+    setState(() {
+      bottomNavIndex = index;
+      if (index != 2) clearSettingsPreview();
+    });
   }
 
   Future<void> initLogic() async {

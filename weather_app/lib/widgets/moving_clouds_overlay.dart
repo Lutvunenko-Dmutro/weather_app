@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_weather_bg_null_safety/flutter_weather_bg.dart';
@@ -138,12 +139,11 @@ class _MovingCloudsOverlayState extends State<MovingCloudsOverlay>
             final dx1 = screenWidth - (_controller1.value * totalDistance1);
             return Positioned(
               left: dx1,
-              top: -80,
+              top: 20, 
               child: Opacity(
-                opacity: 0.4,
+                opacity: 0.6,
                 child: Image.asset(
-                  'images/cloud.webp',
-                  package: 'flutter_weather_bg_null_safety',
+                  'assets/images/cloud1.png',
                   width: cloud1Width,
                   fit: BoxFit.contain,
                 ),
@@ -159,12 +159,11 @@ class _MovingCloudsOverlayState extends State<MovingCloudsOverlay>
             final dx2 = screenWidth - (_controller2.value * totalDistance2);
             return Positioned(
               left: dx2,
-              top: 20,
+              top: 80, 
               child: Opacity(
-                opacity: 0.6,
+                opacity: 0.8,
                 child: Image.asset(
-                  'images/cloud.webp',
-                  package: 'flutter_weather_bg_null_safety',
+                  'assets/images/cloud2.png',
                   width: cloud2Width,
                   fit: BoxFit.contain,
                 ),
@@ -176,4 +175,6 @@ class _MovingCloudsOverlayState extends State<MovingCloudsOverlay>
     );
   }
 }
+
+
 

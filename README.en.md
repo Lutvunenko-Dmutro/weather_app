@@ -48,9 +48,13 @@ Choose different visual styles for each weather condition in the **Settings → 
 
 ---
 
-## 📸 Screenshots
+## 📸 Showcase
 
-> *(GIFs and screenshots of the animated weather effects are coming soon!)*
+<div align="center">
+  <img src="weather_app/assets/demo/kyiv_weather.gif" width="300" alt="Kyiv Weather" />
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="weather_app/assets/demo/settings_weather.gif" width="300" alt="Settings" />
+</div>
 
 ---
 

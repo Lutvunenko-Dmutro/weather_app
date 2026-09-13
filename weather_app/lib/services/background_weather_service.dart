@@ -27,7 +27,7 @@ void callbackDispatcher() {
       final notifyFreeze = PreferencesService.loadNotifyFreeze();
 
       // If user disabled everything, just return
-      if (!notifyRegular && !notifyRain && !notifyFreeze) return Future.value(true);
+      if (!notifyRegular && !notifyRain && !notifyFreeze) return true;
 
       final service = WeatherService();
       // Only fetch the first city to save battery
@@ -73,10 +73,10 @@ void callbackDispatcher() {
           });
         }
       }
-      return Future.value(true);
+      return true;
     } catch (e) {
       debugPrint('BackgroundWeatherService: error $e');
-      return Future.value(false);
+      return false;
     }
   });
 }

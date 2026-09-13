@@ -90,7 +90,7 @@ class SettingsView extends StatelessWidget {
                             label: _t('Сповіщення', 'Notifications'),
                             trailing: Switch(
                               value: PreferencesService.loadNotificationsEnabled(),
-                              activeColor: Colors.blueAccent,
+                              activeTrackColor: Colors.blueAccent,
                               onChanged: (val) async {
                                 if (val) {
                                   final granted = await NotificationService.requestPermission();
@@ -113,7 +113,7 @@ class SettingsView extends StatelessWidget {
                               label: _t('  • Дощ / Сніг', '  • Rain / Snow'),
                               trailing: Switch(
                                 value: PreferencesService.loadNotifyRain(),
-                                activeColor: Colors.blueAccent,
+                                activeTrackColor: Colors.blueAccent,
                                 onChanged: (val) async {
                                   await PreferencesService.saveNotifyRain(val);
                                   onLanguageChanged(currentLang);
@@ -124,7 +124,7 @@ class SettingsView extends StatelessWidget {
                               label: _t('  • Заморозки (< 0°C)', '  • Freezes (< 0°C)'),
                               trailing: Switch(
                                 value: PreferencesService.loadNotifyFreeze(),
-                                activeColor: Colors.blueAccent,
+                                activeTrackColor: Colors.blueAccent,
                                 onChanged: (val) async {
                                   await PreferencesService.saveNotifyFreeze(val);
                                   onLanguageChanged(currentLang);
@@ -135,7 +135,7 @@ class SettingsView extends StatelessWidget {
                               label: _t('  • Регулярні зведення', '  • Regular updates'),
                               trailing: Switch(
                                 value: PreferencesService.loadNotifyRegular(),
-                                activeColor: Colors.blueAccent,
+                                activeTrackColor: Colors.blueAccent,
                                 onChanged: (val) async {
                                   await PreferencesService.saveNotifyRegular(val);
                                   onLanguageChanged(currentLang);

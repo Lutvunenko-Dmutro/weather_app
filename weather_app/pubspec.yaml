@@ -15,6 +15,10 @@ dependencies:
   shared_preferences: ^2.3.2
   fl_chart: ^0.68.0
   intl: ^0.20.2
+  geolocator: ^14.0.2
+  flutter_weather_bg_null_safety: ^1.0.0
+  audioplayers: ^6.6.0
+  geocoding: ^5.0.0
 
 dev_dependencies:
   flutter_test:
@@ -26,3 +30,5 @@ flutter:
 
   assets:
     - assets/ukrainian_cities.json
+    - assets/images/
+    - assets/sounds/

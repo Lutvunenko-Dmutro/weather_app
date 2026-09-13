@@ -10,6 +10,9 @@ class WeatherCard extends StatelessWidget {
   final List<ForecastItem> forecast;
   final bool isCelsius;
   final String lang;
+  final DateTime? lastUpdated;
+  final Future<void> Function()? onRefresh;
+  final VoidCallback? onDelete;
 
   const WeatherCard({
     super.key,
@@ -17,7 +20,17 @@ class WeatherCard extends StatelessWidget {
     this.forecast = const [],
     this.isCelsius = true,
     this.lang = 'uk',
+    this.lastUpdated,
+    this.onRefresh,
+    this.onDelete,
   });
+
+  String _formatLastUpdated() {
+    if (lastUpdated == null) return lang == 'uk' ? 'Оновлюється...' : 'Updating...';
+    final h = lastUpdated!.hour.toString().padLeft(2, '0');
+    final m = lastUpdated!.minute.toString().padLeft(2, '0');
+    return lang == 'uk' ? 'Оновлено о $h:$m' : 'Updated at $h:$m';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,48 +51,51 @@ class WeatherCard extends StatelessWidget {
       );
     }
 
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color(0xFF0D0B2E), // Deep dark blue
-            Color(0xFF2A1549), // Deep purple
-            Color(0xFF0F0F1A), // Dark bottom
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          stops: [0.0, 0.5, 1.0],
-        ),
-      ),
+    return RefreshIndicator(
+      onRefresh: onRefresh ?? () async {},
+      color: Colors.blueAccent,
+      backgroundColor: const Color(0xFF1A1A2E),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.only(top: 48, left: 24, right: 24, bottom: 48),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // City
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  weather!.city,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w500,
+          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+          padding: const EdgeInsets.only(top: 48, left: 24, right: 24, bottom: 48),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // City
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    weather!.translatedCity ?? weather!.city,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                const Icon(Icons.near_me, color: Colors.blueAccent, size: 20),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              lang == 'uk' ? 'Оновлено щойно' : 'Updated just now',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: 14,
+                  if (weather!.isCurrentLocation) ...[
+                    const SizedBox(width: 8),
+                    const Icon(Icons.near_me, color: Colors.blueAccent, size: 20),
+                  ],
+                  if (onDelete != null) ...[
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, color: Colors.white54, size: 24),
+                      onPressed: onDelete,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ],
               ),
-            ),
+              const SizedBox(height: 8),
+              Text(
+                _formatLastUpdated(),
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.6),
+                  fontSize: 14,
+                ),
+              ),
             
             const SizedBox(height: 24),
             

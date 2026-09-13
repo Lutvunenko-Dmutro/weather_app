@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:async';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
+import '../models/weather_model.dart';
+import '../models/forecast_model.dart';
 import '../models/weather_model.dart';
 import '../models/forecast_model.dart';
 
@@ -76,10 +77,38 @@ class WeatherService {
     return results;
   }
 
-  Future<List<String>> loadUkrainianCities() async {
-    final String response =
-        await rootBundle.loadString('assets/ukrainian_cities.json');
-    final List<dynamic> data = json.decode(response);
-    return data.cast<String>();
+  Future<List<String>> fetchCitySuggestions(String query, {String lang = 'uk'}) async {
+    if (query.trim().isEmpty) return [];
+    final url = Uri.https('api.openweathermap.org', '/geo/1.0/direct', {
+      'q': query.trim(),
+      'limit': '5',
+      'appid': _apiKey,
+    });
+
+    try {
+      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final List data = json.decode(response.body);
+        return data.map((item) {
+          final localNames = item['local_names'];
+          print('DEBUG: localNames type = ${localNames.runtimeType}, value = $localNames');
+          String name = item['name'] as String;
+          if (localNames is Map) {
+            if (localNames.containsKey(lang)) {
+              name = localNames[lang].toString();
+            } else if (lang == 'uk' && localNames.containsKey('ru')) {
+              name = localNames['ru'].toString();
+            }
+          }
+          final state = item['state'] != null ? ', ${item['state']}' : '';
+          final country = item['country'] != null ? ', ${item['country']}' : '';
+          return '$name$state$country';
+        }).toList();
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
   }
+
 }

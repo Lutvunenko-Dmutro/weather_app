@@ -86,7 +86,7 @@ class BackgroundWeatherService {
   BackgroundWeatherService._();
 
   static Future<void> init() async {
-    await Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
+    await Workmanager().initialize(callbackDispatcher);
   }
 
   /// Schedule a repeating task that fires every [hours] hours.

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../services/preferences_service.dart';
-import '../../services/notification_service.dart';
 import '../home_screen.dart';
 import 'weather_data_mixin.dart';
 import 'effects_mixin.dart';

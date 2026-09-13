@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
@@ -33,7 +34,10 @@ class LocationService {
     }
 
     return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+      ),
+    );
   }
 
   Future<WeatherModel> fetchWeatherByLocation(double lat, double lon, {String lang = 'uk'}) async {
@@ -69,7 +73,7 @@ class LocationService {
             }
           }
         } catch (_) {
-          print('Reverse geocoding with geocoding package failed.');
+          debugPrint('Reverse geocoding with geocoding package failed.');
         }
 
         return WeatherModel.fromJson(city, data).copyWith(

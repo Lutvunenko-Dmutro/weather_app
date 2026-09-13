@@ -90,8 +90,8 @@ class WeatherModel {
     );
   }
 
-  String get tempMin => '${rawTempMin}°';
-  String get tempMax => '${rawTempMax}°';
+  String get tempMin => '$rawTempMin°';
+  String get tempMax => '$rawTempMax°';
 
   String displayTemp(bool isCelsius) {
     if (isCelsius) return '$rawTemp°C';

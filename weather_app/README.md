@@ -53,9 +53,13 @@
 
 ---
 
-## 📸 Скріншоти
+## 📸 Демонстрація роботи
 
-> *(GIF та скріншоти анімацій з'являться найближчим часом!)*
+<div align="center">
+  <img src="assets/demo/kyiv_weather.gif" width="300" alt="Погода Київ" />
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/demo/settings_weather.gif" width="300" alt="Налаштування" />
+</div>
 
 ---
 

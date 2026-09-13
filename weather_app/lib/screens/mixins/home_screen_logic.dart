@@ -18,10 +18,11 @@ mixin HomeScreenLogic on State<HomeScreen>, TickerProviderStateMixin<HomeScreen>
   }
 
   Future<void> initLogic() async {
+    initTabController(); // sync init to prevent null TabController crash on first build
     await PreferencesService.init(); // singleton init — runs once
     loadVariants();                  // now sync
     loadSavedCities();               // sync read from prefs singleton
-    initTabController();
+    initTabController();             // re-init in case cities changed and loadSavedCities didn't re-init
     await loadAll();
   }
 }
